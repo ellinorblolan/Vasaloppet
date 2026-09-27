@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Öppet Spår 90 km – Träningsplan 2027</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e8eef5; font-family: 'Inter', system-ui, sans-serif; }
+    ::-webkit-scrollbar { height: 4px; width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .toast { animation: fadeIn 0.2s ease; }
+    input { font-family: inherit; }
+    a { color: #1b6b8a; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    const FILENAME = "oppet-done.json";
+    const gistRead = async (gistId, token) => {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json" }
+      });
+      if (!r.ok) throw new Error(`GitHub API ${r.status}`);
+      const data = await r.json();
+      const content = data.files[FILENAME]?.content;
+      return content ? JSON.parse(content) : {};
+    };
+    const gistWrite = async (gistId, token, obj) => {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: "PATCH",
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({ files: { [FILENAME]: { content: JSON.stringify(obj) } } })
+      });
+      if (!r.ok) throw new Error(`GitHub API ${r.status}`);
+    };
+    const saveLocal = obj => { try { localStorage.setItem("oppet-done", JSON.stringify(obj)); } catch(_){} };
+    const loadLocal = () => { try { const s = localStorage.getItem("oppet-done"); return s ? JSON.parse(s) : {}; } catch { return {}; } };
+
+    const PHASES = [
+      { id:1, name:"Grundbyggnad",  weeks:[1,2,3,4,5],           color:"#2e7d4f" },
+      { id:2, name:"Skierg intro",  weeks:[6,7,8,9,10,11,12,13], color:"#1b6b8a" },
+      { id:3, name:"Snö!",          weeks:[14,15,16,17],          color:"#4a90d9" },
+      { id:4, name:"Toppform",      weeks:[18,19,20,21,22],       color:"#6d3fa0" },
+    ];
+    const getPhase = n => PHASES.find(p => p.weeks.includes(n));
+
+    const TYPES = {
+      cycling:   { label:"Cykling",     color:"#2e7d4f", bg:"#e8f5ee", emoji:"🚴"  },
+      cycleint:  { label:"Cykling int", color:"#1a6b3a", bg:"#d9f0e4", emoji:"🚴‍♀️" },
+      skierg:    { label:"Skierg",      color:"#1b6b8a", bg:"#e6f2f9", emoji:"🎿"  },
+      skiing:    { label:"Skidåkning",  color:"#4a90d9", bg:"#eaf3fc", emoji:"⛷️"  },
+      easy:      { label:"Löpning",     color:"#c4822a", bg:"#fdf3e7", emoji:"🏃"  },
+      long:      { label:"Långpass",    color:"#7b5ea7", bg:"#f3eefb", emoji:"🟣"  },
+      strength:  { label:"Styrka",      color:"#5b4e8c", bg:"#efecf9", emoji:"💪"  },
+      strengthU: { label:"Styrka ök.",  color:"#0e7490", bg:"#ecfeff", emoji:"💪"  },
+      strengthL: { label:"Styrka uk.",  color:"#0891b2", bg:"#e0f7fb", emoji:"🦵"  },
+      soccer:    { label:"Fotboll",     color:"#15803d", bg:"#f0fdf4", emoji:"⚽"  },
+      rest:      { label:"Vila",        color:"#94a3b8", bg:"#f8fafc", emoji:"—"   },
+      off:       { label:"Ledig",       color:"#64748b", bg:"#f1f5f9", emoji:"🏖️" },
+      race:      { label:"LOPP!",       color:"#dc2626", bg:"#fff5f5", emoji:"🏅"  },
+    };
+    const CHECKABLE = ["cycling","cycleint","skierg","skiing","easy","long","strength","strengthU","strengthL","race"];
+
+    const weeks = [
+      { week:1, phase:1, dates:"28 sep–4 okt", focus:"Återhämtning efter Lidingöloppet",
+        tip:"Kroppen är tröttare än du tror efter ett lopp. Håll allt lätt denna vecka.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min lätt cykling på SATS – aktiv återhämtning."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt överkropp: latsdrag, rodd, axelpress. 3×12."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp: knäböj, utfallssteg, höftlyft. 3×12."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:8, desc:"8 km lätt löpning, 7:00–7:30/km."},
+          {day:"Sön",type:"long",      min:0, km:10,desc:"10 km långpass, lugnt."},
+        ]},
+      { week:2, phase:1, dates:"5–11 okt", focus:"Kom igång – bygg aerob bas",
+        tip:"Cyklingen på lördagen ger aerob träning utan löpbelastning – bra direkt efter Lidingöloppet.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, tricepspress. 3×12."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, marklyft, vadpress. 3×12."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:60,km:0, desc:"60 min cykling – SATS eller utomhus."},
+          {day:"Sön",type:"long",      min:0, km:13,desc:"13 km långpass. HR under 149."},
+        ]},
+      { week:3, phase:1, dates:"12–18 okt", focus:"Styrka och löpvolym",
+        tip:"Styrketräningen i oktober är investering i ryggen och armarna som driver skidåkning.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals på SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tyngre: 4×10 latsdrag, rodd, pull-ups."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: 4×10 knäböj, utfallssteg, enkelbenshöftlyft."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:12,desc:"12 km löpning."},
+          {day:"Sön",type:"long",      min:0, km:15,desc:"15 km långpass. Känn att formen är tillbaka."},
+        ]},
+      { week:4, phase:1, dates:"19–25 okt", focus:"Bygg löpvolymen",
+        tip:"Lördagens cykling och söndagens långpass ger hög aerob volym utan skaderisken av bara löpning.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress, biceps. 4×10."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: tyngre knäböj 4×8, nordic hamstrings."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:70,km:0, desc:"70 min cykling utomhus eller SATS."},
+          {day:"Sön",type:"long",      min:0, km:16,desc:"16 km långpass. Terräng."},
+        ]},
+      { week:5, phase:1, dates:"26 okt–1 nov", focus:"Sista veckan utan skierg",
+        tip:"Nästa vecka startar skierg. Söndagens 16 km avslutar grundblocket starkt.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tung: 4×8 latsdrag, rodd, triceps-dips."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, marklyft, Bulgarian split squat. 3×10."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:14,desc:"14 km löpning. Progressivt tempo."},
+          {day:"Sön",type:"long",      min:0, km:16,desc:"16 km långpass. Avslutar grundblocket starkt."},
+        ]},
+      { week:6, phase:2, dates:"2–8 nov", focus:"Skierg startar – teknik och känsla",
+        tip:"Första skiergpasset! 20 min räcker. Fokusera på dubbelstavstekniken – drag med hela kroppen, inte bara armarna.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 3×12."},
+          {day:"Ons",type:"skierg",    min:20,km:0, desc:"20 min skierg intro – teknikfokus dubbelstav. Sedan fotboll på eftermiddagen."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, utfallssteg, höftlyft. 3×12."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:60,km:0, desc:"60 min cykling SATS eller utomhus."},
+          {day:"Sön",type:"long",      min:0, km:17,desc:"17 km långpass. HR under 149."},
+        ]},
+      { week:7, phase:2, dates:"9–15 nov", focus:"Skierg 25 min – bygg uthållighet",
+        tip:"Öka skierg med 5 min. Armarna börjar anpassa sig. Fokus: jämnt drag, andas rytmiskt, använd core.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tyngre: 4×10 latsdrag, rodd, pull-ups."},
+          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg kontinuerligt + fotboll eftermiddag."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: 4×10 knäböj, nordic hamstrings, vadpress."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:14,desc:"14 km löpning."},
+          {day:"Sön",type:"long",      min:0, km:18,desc:"18 km långpass. HR under 149."},
+        ]},
+      { week:8, phase:2, dates:"16–22 nov", focus:"Skierg 30 min – halvvägs mot max",
+        tip:"30 min skierg är halva vägen mot onsdagsmax på 40 min. Känn att rörelsemönstret börjar sitta.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress, triceps. 4×10."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg – hela vägen utan stopp. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, bålrotation, planka."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:75,km:0, desc:"75 min cykling – längsta cyklingpasset hittills."},
+          {day:"Sön",type:"long",      min:0, km:18,desc:"18 km långpass. Konsolidering."},
+        ]},
+      { week:9, phase:2, dates:"23–29 nov", focus:"Skierg 35 min med intervaller",
+        tip:"Första skierg-intervallerna! 4×3 min hårt med 2 min vila. Känn hur kraft och teknik arbetar ihop under press.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tung: 5×8 latsdrag hög vikt, rodd, pull-ups."},
+          {day:"Ons",type:"skierg",    min:35,km:0, desc:"35 min skierg: 10 min uppv + 4×3 min hårt + vila + nedv. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp tyngre: knäböj, marklyft, enkelbensövningar. 4×8."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:16,desc:"16 km löpning. Terräng."},
+          {day:"Sön",type:"long",      min:0, km:20,desc:"20 km långpass – MILSTOLPE! HR under 149."},
+        ]},
+      { week:10, phase:2, dates:"30 nov–6 dec", focus:"Skierg 40 min – MAXNIVÅ nådd",
+        tip:"40 min skierg – du är nu på din onsdagsmax. Fokusera nu på kvalitet: progressivt tempo, intervaller och teknik.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg kontinuerligt – MAXNIVÅ! Sedan fotboll eftermiddag."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, hip thrust, planka."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:80,km:0, desc:"80 min cykling utomhus eller längre SATS-pass."},
+          {day:"Sön",type:"long",      min:0, km:20,desc:"20 km långpass. Känn dig stark."},
+        ]},
+      { week:11, phase:2, dates:"7–13 dec", focus:"Skierg 40 min intervaller",
+        tip:"Nu när du klarar 40 min kontinuerligt – byt till kvalitet. Intervaller bygger den kraft du behöver i uppförsbackarna.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tung: latsdrag, rodd, triceps-dips. 4×10."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg: 10 min uppv + 5×3 min hårt + vila + nedv. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: tyngre knäböj, nordic hamstrings, vadpress. 4×8."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:18,desc:"18 km löpning. Kuperat om möjligt."},
+          {day:"Sön",type:"long",      min:0, km:20,desc:"20 km långpass. Stabilt och kontrollerat."},
+        ]},
+      { week:12, phase:2, dates:"14–20 dec", focus:"Skierg tröskeltempo + cykling",
+        tip:"Tröskeltempo på skierg: medvetet jobbigt men hållbart hela passet. Tränar uthålligheten för 90 km.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo – medvetet jobbigt men hållbart. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + bål: knäböj, hip thrust, bålrotation."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"cycling",   min:90,km:0, desc:"90 min cykling – längsta cyklingpasset. Bygg aerob kapacitet."},
+          {day:"Sön",type:"long",      min:0, km:18,desc:"18 km långpass lätt. Julstämning. HR under 149."},
+        ]},
+      { week:13, phase:2, dates:"21–27 dec", focus:"Julvecka – håll igång",
+        tip:"Julvecka kräver flexibilitet. Skierg onsdag kan bli förskjutet – det är ok. Håll volymen nere men stanna inte helt.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt överkropp – rörlighet och core."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg (kortare julvecka) + Fotboll / julledighet."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp: bodyweight-övningar, rörlighet."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"easy",      min:0, km:12,desc:"12 km lätt löpning. God jul!"},
+          {day:"Sön",type:"long",      min:0, km:15,desc:"15 km långpass. Lugnt."},
+        ]},
+      { week:14, phase:3, dates:"28 dec–3 jan", focus:"Nyår + förberedelse för snö",
+        tip:"Snön kanske inte är här ännu men kan komma närsomhelst. Ha skidorna redo! Om ingen snö – cykling 75 min på lördag.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll formen inför snösäsongen. Sedan fotboll / nyårsledighet."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, marklyft, planka."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:20,desc:"Om snö: 15–20 km skidåkning – FÖRSTA GÅNGEN! Teknik och känsla. Om ej snö: cykling 75 min."},
+          {day:"Sön",type:"long",      min:0, km:15,desc:"15 km löpning lätt."},
+        ]},
+      { week:15, phase:3, dates:"4–10 jan", focus:"Snö på riktigt – bygg skidkilometer",
+        tip:"Förvänta dig att skidåkning känns tröttande på ett helt annat sätt – övre kroppen jobbar hårt. Starta korta och bygg upp.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp skidfokus: tung latsdrag + rodd."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – håll skierg-styrkan levande. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:20,desc:"20 km skidåkning. Lugnt tempo. Öva glid och teknik."},
+          {day:"Sön",type:"long",      min:0, km:14,desc:"14 km löpning lätt – återhämtar sig efter lördagens skidning."},
+        ]},
+      { week:16, phase:3, dates:"11–17 jan", focus:"25 km skidor – bygg distance",
+        tip:"25 km på skidor är en prestation. Ta med energi och dryck. Öva att äta/dricka utan att stanna.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, triceps. 4×10."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, hip thrust, vadpress."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:25,desc:"25 km skidåkning. Energi vid km 12. Håll jämn ansträngning i backarna."},
+          {day:"Sön",type:"long",      min:0, km:14,desc:"14 km löpning lätt."},
+        ]},
+      { week:17, phase:3, dates:"18–24 jan", focus:"30 km – en tredjedel av loppet",
+        tip:"30 km på snö är ett mentalt genombrott. Fokus: energiintag och att hålla teknik i slutet när man är trött.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tyngre: 5×8 latsdrag, rodd, pull-ups."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – 5×3 min hårt. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, marklyft. Sista tyngre styrkepasset."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:30,desc:"30 km skidåkning – EN TREDJEDEL AV LOPPET! Energi var 10 km."},
+          {day:"Sön",type:"long",      min:0, km:12,desc:"12 km löpning lätt."},
+        ]},
+      { week:18, phase:4, dates:"25–31 jan", focus:"Toppform startar – 35 km",
+        tip:"Styrka trappas ner till underhållsnivå. Kroppen behöver kraft till skidpasset nu. Sömn och kost är träning.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"LÄTT överkropp: core, rörlighet, latsdrag lägre vikt. Underhåll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll känslan. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp: bodyweight, rörlighet, vadpress."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:35,desc:"35 km race-specifikt tempo. Negativ splittning – starta lugnt, avsluta starkare."},
+          {day:"Sön",type:"long",      min:0, km:10,desc:"10 km löpning lätt."},
+        ]},
+      { week:19, phase:4, dates:"1–7 feb", focus:"40 km – nästan halvvägs i loppet",
+        tip:"40 km i träning – nästan halva Öppet Spår. Hur du mår i slutet av detta pass berättar mycket om din loppform.",
+        workouts:[
+          {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt överkropp – underhåll och rörlighet."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp + core."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:40,desc:"40 km skidåkning. Loppstempo. Energi var 10 km. Mental träning."},
+          {day:"Sön",type:"long",      min:0, km:10,desc:"10 km lätt löpning."},
+        ]},
+      { week:20, phase:4, dates:"8–14 feb", focus:"50 km – LÄNGSTA PASSET",
+        tip:"50 km är det längsta du kör i hela planen. Klara du detta med energi kvar – du är redo för 90 km.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min lätt cykling SATS."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt core och rörlighet. Inget tungt."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg lätt – kortare inför helgens storpass. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt rörlighet och core. Förbered kroppen för lördag."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:50,desc:"50 KM – Längsta passet! Starta LUGNT. Energi var 8 km. Du klarar det."},
+          {day:"Sön",type:"easy",      min:0, km:8, desc:"8 km mycket lätt löpning – aktiv återhämtning."},
+        ]},
+      { week:21, phase:4, dates:"15–21 feb", focus:"Nedtrappning – taper",
+        tip:"TAPER börjar. Minska volymen men behåll intensiteten kort. Kroppen absorberar nu all din träning.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:30,km:0, desc:"30 min lätt cykling. Inga intervaller."},
+          {day:"Tis",type:"strengthU", min:0, km:0, desc:"Sista styrkepasset: lätt, kort. Core och rörlighet. 2×10."},
+          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg lätt – håll känslan levande. Sedan fotboll."},
+          {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt rörlighet. Vila är träning nu."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:""},
+          {day:"Lör",type:"skiing",    min:0, km:25,desc:"25 km konfidenslöpning på skidor. Du ska känna dig stark och snabb."},
+          {day:"Sön",type:"easy",      min:0, km:8, desc:"8 km lätt jogg."},
+        ]},
+      { week:22, phase:4, dates:"22–28 feb", focus:"Loppvecka – 90 km på lördag",
+        tip:"INGENTING du gör nu förbättrar formen. Prioritera sömn, kost och mental förberedelse. De första 30 km avgör de sista 30.",
+        workouts:[
+          {day:"Mån",type:"cycling",   min:20,km:0, desc:"20 min mycket lätt cykling – håll benen rörliga."},
+          {day:"Tis",type:"skierg",    min:15,km:0, desc:"15 min skierg aktivering – väck armarna försiktigt."},
+          {day:"Ons",type:"rest",      min:0, km:0, desc:"Vila. Laga vaxen. Packa väskan. Studera spåret."},
+          {day:"Tor",type:"easy",      min:0, km:4, desc:"4 km lätt jogg – sista rörelsepasset."},
+          {day:"Fre",type:"off",       min:0, km:0, desc:"VILA. Ät kolhydrater. Lägg dig tidigt."},
+          {day:"Lör",type:"race",      min:0, km:90,desc:"🏅 ÖPPET SPÅR 90 KM! Mål: under 8 timmar. Starta LUGNT de första 30 km."},
+          {day:"Sön",type:"rest",      min:0, km:0, desc:"Fira. Du förtjänar det."},
+        ]},
+    ];
+
+    /* ── Setup wizard ── */
+    function SetupWizard({ onComplete, onCancel }) {
+      const [step,setStep]=useState(1);
+      const [token,setToken]=useState("");
+      const [gistId,setGistId]=useState("");
+      const [testing,setTesting]=useState(false);
+      const [error,setError]=useState("");
+
+      const testAndSave = async () => {
+        setTesting(true); setError("");
+        try {
+          await gistRead(gistId.trim(), token.trim());
+          localStorage.setItem("oppet-token", token.trim());
+          localStorage.setItem("oppet-gist-id", gistId.trim());
+          onComplete({ token: token.trim(), gistId: gistId.trim() });
+        } catch(e) {
+          setError("Kunde inte ansluta. Kontrollera token och Gist-ID.");
+        }
+        setTesting(false);
+      };
+
+      const sStyle = n => ({
+        width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+        fontWeight:800,fontSize:13,flexShrink:0,
+        background:step>n?"#2e7d4f":step===n?"#1b3a5c":"#e2e8f0",
+        color:step>=n?"white":"#94a3b8",
+      });
+
+      return (
+        <div style={{minHeight:"100vh",background:"#e8eef5",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+          <div style={{width:"100%",maxWidth:520,background:"white",borderRadius:16,boxShadow:"0 4px 24px rgba(0,0,0,.08)",overflow:"hidden"}}>
+            <div style={{background:"linear-gradient(135deg,#1b3a5c,#254b73)",padding:"24px 28px",color:"white"}}>
+              {onCancel&&<button onClick={onCancel} style={{background:"rgba(255,255,255,.15)",border:"none",borderRadius:8,color:"white",fontSize:13,fontWeight:700,cursor:"pointer",padding:"7px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:6}}>← Tillbaka till träningsplanen</button>}
+              <div style={{fontSize:11,fontWeight:700,letterSpacing:"0.1em",color:"#93c5fd",textTransform:"uppercase",marginBottom:4}}>Öppet Spår 90 km</div>
+              <h1 style={{fontSize:20,fontWeight:800,margin:0}}>GitHub-synk · Konfigurera</h1>
+              <p style={{fontSize:13,color:"#bae6fd",marginTop:6}}>OBS: Skapa en ny Gist för denna plan (separat från Lidingöloppet). Samma token fungerar.</p>
+            </div>
+            <div style={{padding:"20px 28px 0",display:"flex",gap:0,alignItems:"center"}}>
+              {[1,2,3,4].map((n,i)=>(
+                <React.Fragment key={n}>
+                  <div style={sStyle(n)}>{step>n?"✓":n}</div>
+                  {i<3&&<div style={{flex:1,height:2,background:step>n?"#2e7d4f":"#e2e8f0",margin:"0 4px"}}/>}
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{padding:"20px 28px 28px"}}>
+              {step===1&&<div>
+                <h2 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Steg 1 – GitHub-konto</h2>
+                <p style={{fontSize:14,color:"#475569",lineHeight:1.6,marginBottom:16}}>Du har redan ett konto från Lidingöloppet-planen. Hoppa vidare!</p>
+                <button onClick={()=>setStep(2)} style={{width:"100%",background:"#2e7d4f",color:"white",border:"none",borderRadius:8,padding:"12px",fontSize:14,fontWeight:700,cursor:"pointer"}}>Har konto – gå vidare →</button>
+              </div>}
+              {step===2&&<div>
+                <h2 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Steg 2 – Skapa en NY Gist</h2>
+                <p style={{fontSize:14,color:"#475569",lineHeight:1.6,marginBottom:12}}>Skapa en separat Gist för Öppet Spår-planen (din Lidingöloppet-Gist fortsätter fungera).</p>
+                <div style={{background:"#f8fafc",borderRadius:8,padding:14,marginBottom:16,fontSize:13,lineHeight:1.8,border:"1px solid #e2e8f0"}}>
+                  <strong>Gör så här:</strong><br/>
+                  1. Klicka på länken nedan<br/>
+                  2. <strong>Filename:</strong> <code style={{background:"#e2e8f0",padding:"1px 5px",borderRadius:4}}>oppet-done.json</code><br/>
+                  3. <strong>Innehåll:</strong> <code style={{background:"#e2e8f0",padding:"1px 5px",borderRadius:4}}>{"{}"}</code><br/>
+                  4. Klicka <strong>"Create secret gist"</strong><br/>
+                  5. Kopiera Gist-ID från webbadressen
+                </div>
+                <a href="https://gist.github.com" target="_blank" style={{display:"block",background:"#1b3a5c",color:"white",borderRadius:8,padding:"12px",textDecoration:"none",fontWeight:700,fontSize:14,textAlign:"center",marginBottom:16}}>→ Öppna gist.github.com</a>
+                <div style={{marginBottom:16}}>
+                  <label style={{fontSize:13,fontWeight:600,color:"#374151",display:"block",marginBottom:6}}>Klistra in ditt Gist-ID:</label>
+                  <input value={gistId} onChange={e=>setGistId(e.target.value)} placeholder="abc123def456..." style={{width:"100%",border:"1.5px solid #e2e8f0",borderRadius:8,padding:"10px 12px",fontSize:14,outline:"none"}}/>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setStep(1)} style={{flex:1,background:"#f1f5f9",color:"#475569",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:600,cursor:"pointer"}}>← Tillbaka</button>
+                  <button onClick={()=>gistId.trim()&&setStep(3)} disabled={!gistId.trim()} style={{flex:2,background:gistId.trim()?"#2e7d4f":"#e2e8f0",color:"white",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:700,cursor:gistId.trim()?"pointer":"default"}}>Gå vidare →</button>
+                </div>
+              </div>}
+              {step===3&&<div>
+                <h2 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Steg 3 – Token</h2>
+                <p style={{fontSize:14,color:"#475569",lineHeight:1.6,marginBottom:12}}>Du kan använda samma token som för Lidingöloppet-planen! Klistra in den här.</p>
+                <div style={{marginBottom:16}}>
+                  <label style={{fontSize:13,fontWeight:600,color:"#374151",display:"block",marginBottom:6}}>Klistra in din token:</label>
+                  <input value={token} onChange={e=>setToken(e.target.value)} type="password" placeholder="ghp_xxxx..." style={{width:"100%",border:"1.5px solid #e2e8f0",borderRadius:8,padding:"10px 12px",fontSize:14,outline:"none"}}/>
+                  <div style={{fontSize:11,color:"#94a3b8",marginTop:4}}>Samma token som Lidingöloppet-planen fungerar.</div>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setStep(2)} style={{flex:1,background:"#f1f5f9",color:"#475569",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:600,cursor:"pointer"}}>← Tillbaka</button>
+                  <button onClick={()=>token.trim()&&setStep(4)} disabled={!token.trim()} style={{flex:2,background:token.trim()?"#2e7d4f":"#e2e8f0",color:"white",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:700,cursor:token.trim()?"pointer":"default"}}>Gå vidare →</button>
+                </div>
+              </div>}
+              {step===4&&<div>
+                <h2 style={{fontSize:16,fontWeight:700,marginBottom:8}}>Steg 4 – Testa anslutningen</h2>
+                <div style={{background:"#f0fdf4",borderRadius:8,padding:14,marginBottom:20,fontSize:13,border:"1px solid #bbf7d0"}}>
+                  <div>📄 Gist-ID: <strong style={{fontFamily:"monospace"}}>{gistId}</strong></div>
+                  <div style={{marginTop:4}}>🔑 Token: <strong>{"•".repeat(12)}</strong></div>
+                </div>
+                {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:12,marginBottom:16,fontSize:13,color:"#dc2626"}}>⚠️ {error}</div>}
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setStep(3)} style={{flex:1,background:"#f1f5f9",color:"#475569",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:600,cursor:"pointer"}}>← Tillbaka</button>
+                  <button onClick={testAndSave} disabled={testing} style={{flex:2,background:testing?"#6b7280":"#2e7d4f",color:"white",border:"none",borderRadius:8,padding:"11px",fontSize:14,fontWeight:700,cursor:testing?"default":"pointer"}}>
+                    {testing?"Testar...":"Anslut och starta ✓"}
+                  </button>
+                </div>
+              </div>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── Training plan ── */
+    function TrainingPlan({ config, onReset }) {
+      const [activeWeek,setActiveWeek]=useState(1);
+      const [done,setDone]=useState({});
+      const [syncStatus,setSyncStatus]=useState("loading");
+      const [lastSynced,setLastSynced]=useState(null);
+      const debounceRef=useRef(null);
+
+      useEffect(()=>{
+        (async()=>{
+          try {
+            const remote=await gistRead(config.gistId,config.token);
+            const merged={...loadLocal(),...remote};
+            setDone(merged); saveLocal(merged);
+            setSyncStatus("synced"); setLastSynced(new Date());
+          } catch(_){ setDone(loadLocal()); setSyncStatus("error"); }
+        })();
+      },[]);
+
+      const syncToGist=useCallback(obj=>{
+        clearTimeout(debounceRef.current); setSyncStatus("syncing");
+        debounceRef.current=setTimeout(async()=>{
+          try { await gistWrite(config.gistId,config.token,obj); setSyncStatus("synced"); setLastSynced(new Date()); }
+          catch(_){ setSyncStatus("error"); }
+        },1200);
+      },[config]);
+
+      const toggle=(wn,di)=>{
+        const k=`${wn}-${di}`;
+        const next={...done,[k]:!done[k]};
+        Object.keys(next).forEach(k=>{if(!next[k])delete next[k];});
+        setDone(next); saveLocal(next); syncToGist(next);
+      };
+      const isDone=(wn,di)=>!!done[`${wn}-${di}`];
+      const weekProg=wn=>{
+        const w=weeks[wn-1];
+        const ch=w.workouts.filter(d=>CHECKABLE.includes(d.type));
+        return{total:ch.length,done:ch.filter(d=>isDone(wn,w.workouts.indexOf(d))).length};
+      };
+
+      const week=weeks[activeWeek-1];
+      const phase=getPhase(activeWeek);
+      const race=new Date("2027-02-28");
+      const days=Math.max(0,Math.ceil((race-new Date())/864e5));
+      const {total:wTotal,done:wDone}=weekProg(activeWeek);
+      const totalDone=Object.values(done).filter(Boolean).length;
+      const skiMin=week.workouts.reduce((s,w)=>w.type==="skierg"?s+w.min:s,0);
+      const skiKm=week.workouts.reduce((s,w)=>w.type==="skiing"?s+w.km:s,0);
+      const runKm=week.workouts.reduce((s,w)=>["easy","long"].includes(w.type)?s+w.km:s,0);
+      const cycMin=week.workouts.reduce((s,w)=>["cycling","cycleint"].includes(w.type)?s+w.min:s,0);
+      const syncColor={loading:"#94a3b8",synced:"#22c55e",syncing:"#f59e0b",error:"#ef4444"}[syncStatus];
+      const syncLabel={loading:"Laddas...",synced:lastSynced?`Synkad ${lastSynced.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"})}`:"Synkad",syncing:"Sparar...",error:"Synkfel"}[syncStatus];
+
+      return (
+        <div style={{fontFamily:"'Inter',system-ui,sans-serif",background:"#e8eef5",minHeight:"100vh",color:"#1e293b"}}>
+          <div style={{background:"linear-gradient(135deg,#1b3a5c 0%,#254b73 60%,#1b4d6e 100%)",padding:"24px 24px 20px",color:"white"}}>
+            <div style={{maxWidth:740,margin:"0 auto"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:600,color:"#93c5fd",marginBottom:6}}>Träningsplan · 22 veckor</div>
+                  <h1 style={{margin:0,fontSize:26,fontWeight:900,lineHeight:1.1,letterSpacing:"-0.02em"}}>Öppet Spår 90 km</h1>
+                  <div style={{marginTop:7,fontSize:13,color:"#bae6fd",display:"flex",gap:10,flexWrap:"wrap"}}>
+                    <span>28 februari 2027</span><span style={{opacity:.4}}>·</span><span>Mål: under 8 timmar</span>
+                  </div>
+                </div>
+                <div style={{background:"rgba(255,255,255,.1)",borderRadius:14,padding:"10px 20px",textAlign:"center",border:"1px solid rgba(255,255,255,.15)"}}>
+                  <div style={{fontSize:30,fontWeight:900,lineHeight:1}}>{days}</div>
+                  <div style={{fontSize:11,color:"#93c5fd",fontWeight:600,marginTop:2}}>dagar kvar</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:5,marginTop:16,flexWrap:"wrap"}}>
+                {[{e:"🚴",t:"Mån: Cykling"},{e:"💪",t:"Tis: Styrka ök."},{e:"🎿⚽",t:"Ons: Skierg+Fotboll"},{e:"🦵",t:"Tor: Styrka uk."},{e:"🏖️",t:"Fre: Ledig"},{e:"🏃⛷️",t:"Lör: Löpning/Skidor"},{e:"🟣",t:"Sön: Långpass"}]
+                  .map(b=><div key={b.t} style={{background:"rgba(255,255,255,.12)",borderRadius:20,padding:"4px 11px",fontSize:11,fontWeight:600,color:"white"}}>{b.e} {b.t}</div>)}
+              </div>
+            </div>
+          </div>
+
+          <div style={{background:"#0f172a",padding:"9px 20px"}}>
+            <div style={{maxWidth:740,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:syncColor,flexShrink:0}}/>
+                <span style={{fontSize:12,color:"#94a3b8"}}>{syncLabel}</span>
+                {totalDone>0&&<span style={{fontSize:12,color:"#64748b"}}>· {totalDone} pass avbockade</span>}
+              </div>
+              <button onClick={onReset} style={{background:"transparent",color:"#475569",border:"1px solid #334155",borderRadius:6,padding:"4px 10px",fontSize:11,cursor:"pointer"}}>⚙ Synkinställningar</button>
+            </div>
+          </div>
+
+          <div style={{background:"white",borderBottom:"1px solid #e2e8f0"}}>
+            <div style={{maxWidth:740,margin:"0 auto",padding:"10px 16px"}}>
+              <div style={{display:"flex",gap:3}}>
+                {PHASES.map(p=>(
+                  <div key={p.id} style={{flex:p.weeks.length,display:"flex",flexDirection:"column",gap:3}}>
+                    <div style={{height:5,borderRadius:99,background:p.weeks.includes(activeWeek)?p.color:p.color+"30"}}/>
+                    <div style={{fontSize:9,fontWeight:700,color:p.weeks.includes(activeWeek)?p.color:"#cbd5e1"}}>{p.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{background:"white",borderBottom:"1px solid #e2e8f0",overflowX:"auto"}}>
+            <div style={{maxWidth:740,margin:"0 auto",padding:"10px 16px"}}>
+              <div style={{display:"flex",gap:3,minWidth:"fit-content"}}>
+                {weeks.map(w=>{
+                  const ph=getPhase(w.week); const isActive=w.week===activeWeek;
+                  const prog=weekProg(w.week);
+                  const allDone=prog.total>0&&prog.done===prog.total;
+                  const partial=prog.done>0&&!allDone;
+                  return(
+                    <button key={w.week} onClick={()=>setActiveWeek(w.week)} style={{border:"none",background:isActive?ph.color:"transparent",borderRadius:7,cursor:"pointer",padding:"5px 5px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,minWidth:38,position:"relative",outline:isActive?`2px solid ${ph.color}`:"none",outlineOffset:1}}>
+                      {(allDone||partial)&&<div style={{position:"absolute",top:2,right:3,width:6,height:6,borderRadius:"50%",background:allDone?"#22c55e":"#fbbf24",border:`1.5px solid ${isActive?"rgba(255,255,255,.6)":"white"}`}}/>}
+                      <div style={{width:14,height:26,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+                        <div style={{width:7,height:Math.max(4,Math.round((w.workouts.filter(d=>CHECKABLE.includes(d.type)).length/6)*24)),background:isActive?"rgba(255,255,255,.75)":ph.color,borderRadius:3,opacity:isActive?1:.45}}/>
+                      </div>
+                      <span style={{fontSize:10,fontWeight:700,color:isActive?"white":"#64748b"}}>{w.week===22?"🏅":`V${w.week}`}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div style={{maxWidth:740,margin:"0 auto",padding:"14px"}}>
+            <div style={{background:"white",borderRadius:12,padding:"16px 20px",marginBottom:12,borderLeft:`4px solid ${phase.color}`,boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:700,color:phase.color,marginBottom:3}}>{phase.name} · Vecka {week.week} av 22</div>
+                  <div style={{fontSize:20,fontWeight:800,color:"#0f172a"}}>{week.dates}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#475569",marginTop:3}}>{week.focus}</div>
+                  {wDone>0&&<div style={{marginTop:4,fontSize:13,fontWeight:700,color:wDone===wTotal?"#22c55e":"#f59e0b"}}>{wDone===wTotal?"✅":"⏳"} {wDone}/{wTotal} pass klara</div>}
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4,alignItems:"flex-end"}}>
+                  {runKm>0&&<div style={{fontSize:12,color:TYPES.easy.color,fontWeight:700}}>🏃 {runKm} km</div>}
+                  {skiMin>0&&<div style={{fontSize:12,color:TYPES.skierg.color,fontWeight:700}}>🎿 {skiMin} min</div>}
+                  {skiKm>0&&<div style={{fontSize:12,color:TYPES.skiing.color,fontWeight:700}}>⛷️ {skiKm} km</div>}
+                  {cycMin>0&&<div style={{fontSize:12,color:TYPES.cycling.color,fontWeight:700}}>🚴 {cycMin} min</div>}
+                </div>
+              </div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:8}}>
+              {week.workouts.map((w,i)=>{
+                const t=TYPES[w.type]; const canCheck=CHECKABLE.includes(w.type); const checked=isDone(activeWeek,i);
+                const hasContent=!["rest","off"].includes(w.type);
+                return(
+                  <div key={i} onClick={()=>canCheck&&toggle(activeWeek,i)} style={{background:checked?"#f0fdf4":(hasContent?t.bg:"#f8fafc"),borderRadius:10,padding:"10px 5px",border:checked?"1.5px solid #22c55e":`1.5px solid ${hasContent?t.color+"28":"#e2e8f0"}`,cursor:canCheck?"pointer":"default",position:"relative",transition:"all .15s",userSelect:"none"}}>
+                    {checked&&<div style={{position:"absolute",top:4,right:4,width:14,height:14,borderRadius:"50%",background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"white",fontWeight:900}}>✓</div>}
+                    <div style={{fontSize:9,fontWeight:700,marginBottom:5,color:checked?"#16a34a":(hasContent?t.color:"#94a3b8")}}>{w.day.toUpperCase()}</div>
+                    <div style={{fontSize:16,lineHeight:1}}>{t.emoji}</div>
+                    {w.km>0&&w.type!=="race"&&<div style={{marginTop:3,fontSize:12,fontWeight:900,color:checked?"#16a34a":"#0f172a"}}>{w.km}<span style={{fontSize:8,color:"#94a3b8"}}>km</span></div>}
+                    {w.type==="race"&&<div style={{marginTop:2,fontSize:9,fontWeight:800,color:"#dc2626"}}>90 km</div>}
+                    {w.min>0&&w.km===0&&<div style={{marginTop:3,fontSize:11,fontWeight:800,color:checked?"#16a34a":"#0f172a"}}>{w.min}<span style={{fontSize:8,color:"#94a3b8"}}>m</span></div>}
+                    {["strength","strengthU","strengthL","soccer","off","rest"].includes(w.type)&&w.km===0&&w.min===0&&<div style={{marginTop:3,fontSize:8,fontWeight:600,color:checked?"#16a34a":t.color}}>{w.type.startsWith("strength")?"styrka":w.type==="soccer"?"fotboll":w.type==="off"?"ledig":"—"}</div>}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{fontSize:11,color:"#94a3b8",textAlign:"center",marginBottom:12}}>Tryck på ett pass för att bocka av det – sparas automatiskt</div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
+              {week.workouts.map((w,i)=>{
+                if(!w.desc||w.type==="off") return null;
+                const t=TYPES[w.type]; const canCheck=CHECKABLE.includes(w.type); const checked=isDone(activeWeek,i);
+                return(
+                  <div key={i} onClick={()=>canCheck&&toggle(activeWeek,i)} style={{background:checked?"#f0fdf4":"white",borderRadius:10,padding:"12px 14px",display:"flex",gap:12,alignItems:"flex-start",boxShadow:"0 1px 2px rgba(0,0,0,.04)",cursor:canCheck?"pointer":"default",border:checked?"1px solid #bbf7d0":"1px solid transparent",transition:"all .15s",userSelect:"none"}}>
+                    <div style={{width:36,height:36,borderRadius:8,background:checked?"#dcfce7":t.bg,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:`1.5px solid ${checked?"#22c55e":t.color+"28"}`,fontSize:18}}>{checked?"✅":t.emoji}</div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <span style={{fontWeight:700,fontSize:14,color:checked?"#16a34a":"#0f172a",textDecoration:checked?"line-through":"none",opacity:checked?.75:1}}>{w.day} · {t.label}</span>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          {w.km>0&&w.type!=="race"&&<span style={{fontWeight:800,fontSize:13,color:checked?"#16a34a":t.color}}>{w.km} km</span>}
+                          {w.min>0&&<span style={{fontWeight:800,fontSize:13,color:checked?"#16a34a":t.color}}>{w.min} min</span>}
+                          {canCheck&&<div style={{width:20,height:20,borderRadius:6,flexShrink:0,border:checked?"2px solid #22c55e":"2px solid #cbd5e1",background:checked?"#22c55e":"white",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"white",fontWeight:900}}>{checked?"✓":""}</div>}
+                        </div>
+                      </div>
+                      <div style={{fontSize:13,marginTop:3,lineHeight:1.5,color:checked?"#4ade80":"#475569",opacity:checked?.8:1}}>{w.desc}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{background:"white",borderRadius:12,padding:"14px 16px",marginBottom:8,display:"flex",gap:12,alignItems:"flex-start",boxShadow:"0 1px 3px rgba(0,0,0,.05)"}}>
+              <div style={{fontSize:20,flexShrink:0}}>💡</div>
+              <div><div style={{fontWeight:700,fontSize:13,color:"#0f172a",marginBottom:3}}>Veckans fokus</div><div style={{fontSize:13,color:"#475569",lineHeight:1.6}}>{week.tip}</div></div>
+            </div>
+
+            <div style={{display:"flex",flexWrap:"wrap",gap:5,paddingBottom:32,marginTop:8}}>
+              {Object.entries(TYPES).filter(([k])=>!["rest","off"].includes(k)).map(([k,t])=>(
+                <div key={k} style={{background:t.bg,borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:600,color:t.color,border:`1px solid ${t.color}25`}}>{t.emoji} {t.label}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* ── App shell ── */
+    function App() {
+      const [config,setConfig]=useState(null);
+      const [checking,setChecking]=useState(true);
+      const [showSettings,setShowSettings]=useState(false);
+
+      useEffect(()=>{
+        const token=localStorage.getItem("oppet-token");
+        const gistId=localStorage.getItem("oppet-gist-id");
+        if(token&&gistId) setConfig({token,gistId});
+        setChecking(false);
+      },[]);
+
+      const handleComplete=cfg=>{ setConfig(cfg); setShowSettings(false); };
+
+      if(checking) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontSize:14,color:"#94a3b8"}}>Laddar...</div>;
+      if(!config||showSettings) return <SetupWizard onComplete={handleComplete} onCancel={config?()=>setShowSettings(false):null}/>;
+      return <TrainingPlan config={config} onReset={()=>setShowSettings(true)}/>;
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
