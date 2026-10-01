@@ -67,7 +67,7 @@
       off:       { label:"Ledig",       color:"#64748b", bg:"#f1f5f9", emoji:"🏖️" },
       race:      { label:"LOPP!",       color:"#dc2626", bg:"#fff5f5", emoji:"🏅"  },
     };
-    const CHECKABLE = ["cycling","cycleint","skierg","skiing","easy","long","strength","strengthU","strengthL","race"];
+    const CHECKABLE = ["cycling","cycleint","skierg","skiing","easy","long","strength","strengthU","strengthL","soccer","race"];
 
     const weeks = [
       { week:1, phase:1, dates:"28 sep–4 okt", focus:"Återhämtning efter Lidingöloppet",
@@ -130,7 +130,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 3×12."},
-          {day:"Ons",type:"skierg",    min:20,km:0, desc:"20 min skierg intro – teknikfokus dubbelstav. Sedan fotboll på eftermiddagen."},
+          {day:"Ons",type:"skierg",    min:20,km:0, desc:"20 min skierg intro – teknikfokus dubbelstav."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, utfallssteg, höftlyft. 3×12."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"cycling",   min:60,km:0, desc:"60 min cykling SATS eller utomhus."},
@@ -141,7 +142,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tyngre: 4×10 latsdrag, rodd, pull-ups."},
-          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg kontinuerligt + fotboll eftermiddag."},
+          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg kontinuerligt"},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: 4×10 knäböj, nordic hamstrings, vadpress."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"easy",      min:0, km:14,desc:"14 km löpning."},
@@ -152,7 +154,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress, triceps. 4×10."},
-          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg – hela vägen utan stopp. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg – hela vägen utan stopp."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, bålrotation, planka."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"cycling",   min:75,km:0, desc:"75 min cykling – längsta cyklingpasset hittills."},
@@ -163,7 +166,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tung: 5×8 latsdrag hög vikt, rodd, pull-ups."},
-          {day:"Ons",type:"skierg",    min:35,km:0, desc:"35 min skierg: 10 min uppv + 4×3 min hårt + vila + nedv. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:35,km:0, desc:"35 min skierg: 10 min uppv + 4×3 min hårt + vila + nedv."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp tyngre: knäböj, marklyft, enkelbensövningar. 4×8."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"easy",      min:0, km:16,desc:"16 km löpning. Terräng."},
@@ -174,7 +178,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg kontinuerligt – MAXNIVÅ! Sedan fotboll eftermiddag."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg kontinuerligt – MAXNIVÅ!"},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, hip thrust, planka."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"cycling",   min:80,km:0, desc:"80 min cykling utomhus eller längre SATS-pass."},
@@ -185,7 +190,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tung: latsdrag, rodd, triceps-dips. 4×10."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg: 10 min uppv + 5×3 min hårt + vila + nedv. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg: 10 min uppv + 5×3 min hårt + vila + nedv."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: tyngre knäböj, nordic hamstrings, vadpress. 4×8."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"easy",      min:0, km:18,desc:"18 km löpning. Kuperat om möjligt."},
@@ -196,7 +202,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo – medvetet jobbigt men hållbart. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo – medvetet jobbigt men hållbart."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + bål: knäböj, hip thrust, bålrotation."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"cycling",   min:90,km:0, desc:"90 min cykling – längsta cyklingpasset. Bygg aerob kapacitet."},
@@ -207,7 +214,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt överkropp – rörlighet och core."},
-          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg (kortare julvecka) + Fotboll / julledighet."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg (kortare julvecka)"},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp: bodyweight-övningar, rörlighet."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"easy",      min:0, km:12,desc:"12 km lätt löpning. God jul!"},
@@ -218,7 +226,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, axelpress. 4×10."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll formen inför snösäsongen. Sedan fotboll / nyårsledighet."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll formen inför snösäsongen."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core: knäböj, marklyft, planka."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:20,desc:"Om snö: 15–20 km skidåkning – FÖRSTA GÅNGEN! Teknik och känsla. Om ej snö: cykling 75 min."},
@@ -229,7 +238,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp skidfokus: tung latsdrag + rodd."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – håll skierg-styrkan levande. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – håll skierg-styrkan levande."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp + core."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:20,desc:"20 km skidåkning. Lugnt tempo. Öva glid och teknik."},
@@ -240,7 +250,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp: latsdrag, rodd, triceps. 4×10."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg tröskeltempo."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, hip thrust, vadpress."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:25,desc:"25 km skidåkning. Energi vid km 12. Håll jämn ansträngning i backarna."},
@@ -251,7 +262,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Överkropp tyngre: 5×8 latsdrag, rodd, pull-ups."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – 5×3 min hårt. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller – 5×3 min hårt."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Underkropp: knäböj, marklyft. Sista tyngre styrkepasset."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:30,desc:"30 km skidåkning – EN TREDJEDEL AV LOPPET! Energi var 10 km."},
@@ -262,7 +274,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"LÄTT överkropp: core, rörlighet, latsdrag lägre vikt. Underhåll."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll känslan. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg – håll känslan."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp: bodyweight, rörlighet, vadpress."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:35,desc:"35 km race-specifikt tempo. Negativ splittning – starta lugnt, avsluta starkare."},
@@ -273,7 +286,8 @@
         workouts:[
           {day:"Mån",type:"cycleint",  min:45,km:0, desc:"45 min cycling intervals SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt överkropp – underhåll och rörlighet."},
-          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:40,km:0, desc:"40 min skierg intervaller."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt underkropp + core."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:40,desc:"40 km skidåkning. Loppstempo. Energi var 10 km. Mental träning."},
@@ -284,7 +298,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:45,km:0, desc:"45 min lätt cykling SATS."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Lätt core och rörlighet. Inget tungt."},
-          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg lätt – kortare inför helgens storpass. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:30,km:0, desc:"30 min skierg lätt – kortare inför helgens storpass."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt rörlighet och core. Förbered kroppen för lördag."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:50,desc:"50 KM – Längsta passet! Starta LUGNT. Energi var 8 km. Du klarar det."},
@@ -295,7 +310,8 @@
         workouts:[
           {day:"Mån",type:"cycling",   min:30,km:0, desc:"30 min lätt cykling. Inga intervaller."},
           {day:"Tis",type:"strengthU", min:0, km:0, desc:"Sista styrkepasset: lätt, kort. Core och rörlighet. 2×10."},
-          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg lätt – håll känslan levande. Sedan fotboll."},
+          {day:"Ons",type:"skierg",    min:25,km:0, desc:"25 min skierg lätt – håll känslan levande."},
+          {day:"Ons",type:"soccer",    min:0, km:0, desc:"Fotbollsträning (eftermiddag)."},
           {day:"Tor",type:"strengthL", min:0, km:0, desc:"Lätt rörlighet. Vila är träning nu."},
           {day:"Fre",type:"off",       min:0, km:0, desc:""},
           {day:"Lör",type:"skiing",    min:0, km:25,desc:"25 km konfidenslöpning på skidor. Du ska känna dig stark och snabb."},
@@ -560,23 +576,40 @@
               </div>
             </div>
 
-            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:8}}>
-              {week.workouts.map((w,i)=>{
-                const t=TYPES[w.type]; const canCheck=CHECKABLE.includes(w.type); const checked=isDone(activeWeek,i);
-                const hasContent=!["rest","off"].includes(w.type);
-                return(
-                  <div key={i} onClick={()=>canCheck&&toggle(activeWeek,i)} style={{background:checked?"#f0fdf4":(hasContent?t.bg:"#f8fafc"),borderRadius:10,padding:"10px 5px",border:checked?"1.5px solid #22c55e":`1.5px solid ${hasContent?t.color+"28":"#e2e8f0"}`,cursor:canCheck?"pointer":"default",position:"relative",transition:"all .15s",userSelect:"none"}}>
-                    {checked&&<div style={{position:"absolute",top:4,right:4,width:14,height:14,borderRadius:"50%",background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"white",fontWeight:900}}>✓</div>}
-                    <div style={{fontSize:9,fontWeight:700,marginBottom:5,color:checked?"#16a34a":(hasContent?t.color:"#94a3b8")}}>{w.day.toUpperCase()}</div>
-                    <div style={{fontSize:16,lineHeight:1}}>{t.emoji}</div>
-                    {w.km>0&&w.type!=="race"&&<div style={{marginTop:3,fontSize:12,fontWeight:900,color:checked?"#16a34a":"#0f172a"}}>{w.km}<span style={{fontSize:8,color:"#94a3b8"}}>km</span></div>}
-                    {w.type==="race"&&<div style={{marginTop:2,fontSize:9,fontWeight:800,color:"#dc2626"}}>90 km</div>}
-                    {w.min>0&&w.km===0&&<div style={{marginTop:3,fontSize:11,fontWeight:800,color:checked?"#16a34a":"#0f172a"}}>{w.min}<span style={{fontSize:8,color:"#94a3b8"}}>m</span></div>}
-                    {["strength","strengthU","strengthL","soccer","off","rest"].includes(w.type)&&w.km===0&&w.min===0&&<div style={{marginTop:3,fontSize:8,fontWeight:600,color:checked?"#16a34a":t.color}}>{w.type.startsWith("strength")?"styrka":w.type==="soccer"?"fotboll":w.type==="off"?"ledig":"—"}</div>}
-                  </div>
-                );
-              })}
-            </div>
+            {(()=>{
+              const DAYS=["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
+              const groups=DAYS.map(d=>({day:d,sessions:week.workouts.map((w,i)=>({...w,idx:i})).filter(w=>w.day===d)}));
+              return(
+                <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:8}}>
+                  {groups.map(group=>(
+                    <div key={group.day} style={{display:"flex",flexDirection:"column",gap:3}}>
+                      {group.sessions.map((w,si)=>{
+                        const t=TYPES[w.type]; const canCheck=CHECKABLE.includes(w.type); const checked=isDone(activeWeek,w.idx);
+                        const hasContent=!["rest","off"].includes(w.type);
+                        const multi=group.sessions.length>1;
+                        return(
+                          <div key={w.idx} onClick={()=>canCheck&&toggle(activeWeek,w.idx)} style={{
+                            background:checked?"#f0fdf4":(hasContent?t.bg:"#f8fafc"),
+                            borderRadius:10,padding:multi?"7px 4px":"10px 5px",
+                            border:checked?"1.5px solid #22c55e":`1.5px solid ${hasContent?t.color+"28":"#e2e8f0"}`,
+                            cursor:canCheck?"pointer":"default",position:"relative",transition:"all .15s",userSelect:"none",
+                            flex:1,display:"flex",flexDirection:"column",alignItems:"center",
+                          }}>
+                            {checked&&<div style={{position:"absolute",top:3,right:3,width:12,height:12,borderRadius:"50%",background:"#22c55e",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"white",fontWeight:900}}>✓</div>}
+                            {si===0&&<div style={{fontSize:9,fontWeight:700,marginBottom:3,color:checked?"#16a34a":(hasContent?t.color:"#94a3b8")}}>{w.day.toUpperCase()}</div>}
+                            <div style={{fontSize:multi?14:16,lineHeight:1}}>{t.emoji}</div>
+                            {w.km>0&&w.type!=="race"&&<div style={{marginTop:2,fontSize:multi?10:12,fontWeight:900,color:checked?"#16a34a":"#0f172a"}}>{w.km}<span style={{fontSize:7,color:"#94a3b8"}}>km</span></div>}
+                            {w.type==="race"&&<div style={{marginTop:1,fontSize:8,fontWeight:800,color:"#dc2626"}}>90km</div>}
+                            {w.min>0&&w.km===0&&<div style={{marginTop:2,fontSize:multi?9:11,fontWeight:800,color:checked?"#16a34a":"#0f172a"}}>{w.min}<span style={{fontSize:7,color:"#94a3b8"}}>m</span></div>}
+                            {["strength","strengthU","strengthL","soccer","off","rest"].includes(w.type)&&w.km===0&&w.min===0&&<div style={{marginTop:2,fontSize:7,fontWeight:600,color:checked?"#16a34a":t.color}}>{w.type.startsWith("strength")?"styrka":w.type==="soccer"?"fotboll":w.type==="off"?"ledig":"—"}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
             <div style={{fontSize:11,color:"#94a3b8",textAlign:"center",marginBottom:12}}>Tryck på ett pass för att bocka av det – sparas automatiskt</div>
 
             <div style={{display:"flex",flexDirection:"column",gap:5,marginBottom:12}}>
